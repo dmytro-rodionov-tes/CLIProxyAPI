@@ -1,7 +1,5 @@
 # CLIProxyAPI Plus
 
-English | [Chinese](README_CN.md)
-
 This is the Plus version of [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), adding support for third-party providers on top of the mainline project.
 
 > [!NOTE]
@@ -71,11 +69,12 @@ Get 10% OFF GLM CODING PLAN：https://z.ai/subscribe?ic=8JVLJQFSKB
 This fork is primarily optimized for:
 
 - Using **OAuth/subscription logins** (Codex / Claude Code / Gemini / Copilot / etc.) behind an OpenAI-compatible base URL
-- **Hosting your own personal instance** (especially on Railway) so you can call it from anywhere
+- **Hosting your own personal instance** (on Coolify, Railway, or any Docker host) so you can call it from anywhere
 
 Key docs:
 
-- End-user Railway deployment: `docs/RAILWAY_GUIDE.md`
+- **Coolify deployment: [`docs/COOLIFY_GUIDE.md`](docs/COOLIFY_GUIDE.md)** - Deploy in under 5 minutes
+- Railway deployment: `docs/RAILWAY_GUIDE.md`
 - Railway scripts reference (includes Copilot config flags like `COPILOT_FORCE_AGENT_CALL`): `scripts/README_RAILWAY.md`
 - SDK usage (embed the proxy in Go): `docs/sdk-usage.md`
 - SDK advanced: `docs/sdk-advanced.md`
@@ -86,7 +85,8 @@ Provider & config matrix (fork-specific):
 
 | Topic | Where | Notes |
 | :--- | :--- | :--- |
-| Provider login commands (Gemini / Claude / Codex / Copilot / Grok / Qwen / iFlow / Antigravity / Vertex) | `docs/RAILWAY_GUIDE.md` | See the “Local Authentication” table for exact `--*-login` flags. |
+| Coolify deployment | `docs/COOLIFY_GUIDE.md` | Quick 3-step setup with Docker Compose |
+| Provider login commands (Gemini / Claude / Codex / Copilot / Grok / Qwen / iFlow / Antigravity / Vertex) | `docs/RAILWAY_GUIDE.md` | See the "Local Authentication" table for exact `--*-login` flags. |
 | Grok support | `docs/RAILWAY_GUIDE.md` | Uses `--grok-login` (SSO cookies flow). |
 | Copilot support | `docs/RAILWAY_GUIDE.md` | Uses `--copilot-login` (device code flow). |
 | Railway env vars (auth transfer) | `scripts/README_RAILWAY.md` | `AUTH_BUNDLE` or `AUTH_ZIP_URL`, plus `API_KEY_1`, optional `AUTH_DIR_NAME`, `FORCE_BUILD`. |

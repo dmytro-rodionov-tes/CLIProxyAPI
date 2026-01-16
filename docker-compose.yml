@@ -1,7 +1,6 @@
 services:
   cli-proxy-api:
-    image: ${CLI_PROXY_IMAGE:-eceasy/cli-proxy-api-plus:latest}
-    pull_policy: always
+    image: ${CLI_PROXY_IMAGE:-cli-proxy-api:latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,20 +8,95 @@ services:
         VERSION: ${VERSION:-dev}
         COMMIT: ${COMMIT:-none}
         BUILD_DATE: ${BUILD_DATE:-unknown}
-    container_name: cli-proxy-api-plus
-    # env_file:
-    #   - .env
-    environment:
-      DEPLOY: ${DEPLOY:-}
-    ports:
-      - "8317:8317"
-      - "8085:8085"
-      - "1455:1455"
-      - "54545:54545"
-      - "51121:51121"
-      - "11451:11451"
-    volumes:
-      - ./config.yaml:/CLIProxyAPI/config.yaml
-      - ./auths:/root/.cli-proxy-api
-      - ./logs:/CLIProxyAPI/logs
+    container_name: cli-proxy-api
     restart: unless-stopped
+
+    # Port mapping - internal port is always 8317, external can be configured
+    ports:
+      - "${EXTERNAL_PORT:-8317}:8317"
+
+    # Volume mounts for persistent data
+    # Option 1: Mount your own config.yaml file
+    # Option 2: Let the container generate config from environment variables
+    volumes:
+      # Auth tokens storage - REQUIRED for persistent logins
+      - ./auths:/CLIProxyAPI/auths
+      # Logs directory
+      - ./logs:/CLIProxyAPI/logs
+      # Optional: Mount your own config file (comment out to use env-generated config)
+      # - ./config.yaml:/CLIProxyAPI/config.yaml:ro
+
+    environment:
+      # ============================================================
+      # REQUIRED: At least one API key for client authentication
+      # ============================================================
+      # Option A: Single key
+      - API_KEY=${API_KEY:-}
+      # Option B: Multiple comma-separated keys
+      # - API_KEYS=key1,key2,key3
+
+      # ============================================================
+      # SERVER CONFIGURATION
+      # ============================================================
+      - PORT=8317
+      - SERVER_HOST=
+      - DEBUG=${DEBUG:-false}
+
+      # ============================================================
+      # MANAGEMENT API (Web UI)
+      # ============================================================
+      # Set this to enable the management web interface at /management.html
+      - MANAGEMENT_PASSWORD=${MANAGEMENT_PASSWORD:-}
+      - MANAGEMENT_ALLOW_REMOTE=${MANAGEMENT_ALLOW_REMOTE:-true}
+
+      # ============================================================
+      # OPTIONAL: Credential transfer (Railway-style)
+      # ============================================================
+      # Use AUTH_BUNDLE for base64-encoded credential tarball
+      # - AUTH_BUNDLE=${AUTH_BUNDLE:-}
+      # Or use AUTH_ZIP_URL to download credentials
+      # - AUTH_ZIP_URL=${AUTH_ZIP_URL:-}
+
+      # ============================================================
+      # OPTIONAL: Proxy configuration
+      # ============================================================
+      # - PROXY_URL=socks5://user:pass@host:port
+
+      # ============================================================
+      # OPTIONAL: Advanced settings
+      # ============================================================
+      - REQUEST_RETRY=${REQUEST_RETRY:-3}
+      - MAX_RETRY_INTERVAL=${MAX_RETRY_INTERVAL:-30}
+      - ROUTING_STRATEGY=${ROUTING_STRATEGY:-round-robin}
+      - LOGGING_TO_FILE=${LOGGING_TO_FILE:-false}
+      - USAGE_STATS=${USAGE_STATS:-false}
+
+      # ============================================================
+      # OPTIONAL: Copilot configuration
+      # ============================================================
+      # - COPILOT_ACCOUNT_TYPE=individual
+      # - COPILOT_AGENT_INITIATOR_PERSIST=true
+      # - COPILOT_FORCE_AGENT_CALL=false
+
+      # ============================================================
+      # OPTIONAL: Timezone
+      # ============================================================
+      - TZ=${TZ:-UTC}
+
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8317/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Resource limits (optional, adjust as needed)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
+    #       memory: 512M
+    #     reservations:
+    #       cpus: '0.25'
+    #       memory: 128M

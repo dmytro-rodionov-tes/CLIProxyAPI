@@ -33,4 +33,4 @@ ENV TZ=Europe/London
 
 RUN cp /usr/share/zoneinfo/${TZ} /etc/localtime && echo "${TZ}" > /etc/timezone
 
-CMD ["bash", "scripts/railway_start.sh"]
+CMD ["./cli-proxy-api"]

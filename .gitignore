@@ -6,6 +6,7 @@ server
 # Configuration
 config.yaml
 .env
+.idea
 
 # Generated content
 bin/*

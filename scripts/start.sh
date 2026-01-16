@@ -59,8 +59,9 @@ if [[ "${MODE}" == "auth_bundle" ]]; then
   AUTH_DIR="${ROOT_DIR}/${AUTH_DIR_NAME}"
   TAR_PATH="${ROOT_DIR}/auths.tar.gz"
 
-  rm -rf "${AUTH_DIR}"
+  # Create dir and clear contents (handles mounted volumes that can't be removed)
   mkdir -p "${AUTH_DIR}"
+  rm -rf "${AUTH_DIR:?}"/* "${AUTH_DIR}"/.[!.]* "${AUTH_DIR}"/..?* 2>/dev/null || true
 
   printf '%s' "${AUTH_BUNDLE}" | tr -d '\r\n' | decode_base64 > "${TAR_PATH}"
   tar -xzf "${TAR_PATH}" -C "${AUTH_DIR}"
@@ -76,8 +77,9 @@ if [[ "${MODE}" == "auth_zip" ]]; then
   AUTH_DIR="${ROOT_DIR}/${AUTH_DIR_NAME}"
   ZIP_PATH="${ROOT_DIR}/auths.zip"
 
-  rm -rf "${AUTH_DIR}"
+  # Create dir and clear contents (handles mounted volumes that can't be removed)
   mkdir -p "${AUTH_DIR}"
+  rm -rf "${AUTH_DIR:?}"/* "${AUTH_DIR}"/.[!.]* "${AUTH_DIR}"/..?* 2>/dev/null || true
 
   if command -v curl >/dev/null 2>&1; then
     curl -fsSL "${AUTH_ZIP_URL}" -o "${ZIP_PATH}"

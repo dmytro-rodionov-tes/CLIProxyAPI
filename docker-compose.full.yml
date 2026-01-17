@@ -54,8 +54,9 @@ services:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: librechat
     restart: always
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
-      - 3080:3080
+      - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
       cli-proxy-api:
         condition: service_healthy
@@ -64,12 +65,13 @@ services:
       meilisearch:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3080/health"]
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     environment:
+      - HOST=0.0.0.0
       - PORT=3080
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
@@ -91,6 +93,7 @@ services:
       - ALLOW_SOCIAL_REGISTRATION=false
 
       - NO_INDEX=${NO_INDEX:-true}
+      - TZ=${TZ:-UTC}
     volumes:
       # librechat.yaml: mount from repo or Coolify persistent storage
       # Coolify example source: /data/coolify/applications/.../librechat/librechat.yaml

@@ -75,8 +75,7 @@ services:
       - PORT=3080
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
 
-      # Security keys - generate your own for production:
-      # openssl rand -hex 32
+      # Security keys - generate your own for production
       - CREDS_KEY=${CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
       - CREDS_IV=${CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
       - JWT_SECRET=${JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
@@ -94,10 +93,9 @@ services:
 
       - NO_INDEX=${NO_INDEX:-true}
     volumes:
-      # NOTE: For Coolify, add librechat.yaml via "Configuration Files" in Coolify UI
-      # Mount path: /app/librechat.yaml
-      # For local dev, uncomment the line below:
-      # - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      # librechat.yaml is mounted via Coolify Persistent Storage
+      # Source: /data/coolify/applications/.../librechat/librechat.yaml
+      # Destination: /app/librechat.yaml
       - ./librechat/images:/app/client/public/images
       - ./librechat/logs:/app/api/logs
 

@@ -93,7 +93,7 @@ services:
       - ALLOW_SOCIAL_REGISTRATION=false
 
       - NO_INDEX=${NO_INDEX:-true}
-    command: ["/bin/sh", "-c", "cp /config/librechat.yaml /app/librechat.yaml && exec cross-env NODE_ENV=production node api/server/index.js"]
+    command: ["/bin/sh", "-c", "cp /config/librechat.yaml /app/librechat.yaml && NODE_ENV=production node api/server/index.js"]
     volumes:
       - librechat_config:/config
       - ./librechat/images:/app/client/public/images

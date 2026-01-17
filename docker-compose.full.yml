@@ -1,0 +1,124 @@
+# Full Stack: CLI Proxy API + LibreChat
+#
+# Usage:
+#   docker compose -f docker-compose.full.yml up -d
+#
+# This starts:
+#   - CLIProxyAPI on port 8317
+#   - LibreChat on port 3080
+#   - MongoDB + Meilisearch (for LibreChat)
+#
+# Required: Set API_KEY environment variable or in .env file
+
+services:
+  # CLI Proxy API - Main proxy server
+  cli-proxy-api:
+    image: ${CLI_PROXY_IMAGE:-cli-proxy-api:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        COMMIT: ${COMMIT:-none}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+    container_name: cli-proxy-api
+    restart: unless-stopped
+    ports:
+      - "${EXTERNAL_PORT:-8317}:8317"
+    volumes:
+      - ./auths:/CLIProxyAPI/auths
+      - ./logs:/CLIProxyAPI/logs
+    environment:
+      - API_KEY=${API_KEY:-}
+      - PORT=8317
+      - SERVER_HOST=
+      - DEBUG=${DEBUG:-false}
+      - MANAGEMENT_PASSWORD=${MANAGEMENT_PASSWORD:-}
+      - MANAGEMENT_ALLOW_REMOTE=${MANAGEMENT_ALLOW_REMOTE:-true}
+      - REQUEST_RETRY=${REQUEST_RETRY:-3}
+      - MAX_RETRY_INTERVAL=${MAX_RETRY_INTERVAL:-30}
+      - ROUTING_STRATEGY=${ROUTING_STRATEGY:-round-robin}
+      - LOGGING_TO_FILE=${LOGGING_TO_FILE:-false}
+      - USAGE_STATS=${USAGE_STATS:-false}
+      - METRICS_ENABLED=${METRICS_ENABLED:-false}
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8317/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # LibreChat - Chat UI
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: librechat
+    restart: unless-stopped
+    ports:
+      - "${LIBRECHAT_PORT:-3080}:3080"
+    depends_on:
+      - cli-proxy-api
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/LibreChat
+      - CREDS_KEY=${LIBRECHAT_CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
+      - CREDS_IV=${LIBRECHAT_CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
+      - JWT_SECRET=${LIBRECHAT_JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
+      - JWT_REFRESH_SECRET=${LIBRECHAT_JWT_REFRESH_SECRET:-eaa5191f2914e30b1c79f8ac3b40e8d94919f4e95e4c2ff9e81a9e2f5e0e29b5}
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - SEARCH=true
+      - ALLOW_REGISTRATION=${LIBRECHAT_ALLOW_REGISTRATION:-true}
+      - ALLOW_SOCIAL_LOGIN=false
+      - ALLOW_SOCIAL_REGISTRATION=false
+      - TZ=${TZ:-UTC}
+    volumes:
+      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      - librechat_images:/app/client/public/images
+      - librechat_logs:/app/api/logs
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # MongoDB - LibreChat database
+  mongodb:
+    image: mongo:7.0
+    container_name: librechat-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Meilisearch - LibreChat search
+  meilisearch:
+    image: getmeili/meilisearch:v1.7
+    container_name: librechat-meilisearch
+    restart: unless-stopped
+    volumes:
+      - meilisearch_data:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_NO_ANALYTICS=true
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mongodb_data:
+  meilisearch_data:
+  librechat_images:
+  librechat_logs:

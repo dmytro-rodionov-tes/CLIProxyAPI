@@ -42,7 +42,7 @@ is_truthy() {
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 CONFIG_PATH="${CONFIG_PATH:-${ROOT_DIR}/config.yaml}"
 AUTH_DIR="${AUTH_DIR:-${ROOT_DIR}/auths}"
-LIBRECHAT_CONFIG_PATH="${LIBRECHAT_CONFIG_PATH:-${ROOT_DIR}/librechat/librechat.yaml}"
+LIBRECHAT_CONFIG_PATH="${LIBRECHAT_CONFIG_PATH:-${ROOT_DIR}/librechat/}"
 LIBRECHAT_CONFIG_TEMPLATE="${LIBRECHAT_CONFIG_TEMPLATE:-${ROOT_DIR}/librechat/librechat.example.yaml}"
 
 # Determine deployment mode
@@ -211,12 +211,17 @@ fi
 if is_truthy "${GENERATE_LIBRECHAT_CONFIG:-false}"; then
   if [[ ! -f "${LIBRECHAT_CONFIG_TEMPLATE}" ]]; then
     warn "LibreChat template not found at ${LIBRECHAT_CONFIG_TEMPLATE}; skipping LibreChat config generation"
+    mkdir -p "$(dirname "${LIBRECHAT_CONFIG_PATH}")"
+    if [[ ! -f "${LIBRECHAT_CONFIG_PATH}" ]]; then
+      touch "${LIBRECHAT_CONFIG_PATH}/librechat.yaml"
+      debug "Created empty LibreChat config placeholder at ${LIBRECHAT_CONFIG_PATH}"
+    fi
   else
     mkdir -p "$(dirname "${LIBRECHAT_CONFIG_PATH}")"
     if [[ -f "${LIBRECHAT_CONFIG_PATH}" ]] && ! is_truthy "${OVERWRITE_LIBRECHAT_CONFIG:-false}"; then
       info "LibreChat config already exists at ${LIBRECHAT_CONFIG_PATH}; set OVERWRITE_LIBRECHAT_CONFIG=true to regenerate"
     else
-      cp "${LIBRECHAT_CONFIG_TEMPLATE}" "${LIBRECHAT_CONFIG_PATH}"
+      cp "${LIBRECHAT_CONFIG_TEMPLATE}" "${LIBRECHAT_CONFIG_PATH}/librechat.yaml"
       debug "Copied LibreChat template to ${LIBRECHAT_CONFIG_PATH}"
       # Optionally inline API_KEY to avoid runtime env substitution issues
       if [[ -n "${API_KEY:-}" ]] && is_truthy "${INLINE_API_KEY_IN_LIBRECHAT_CONFIG:-true}"; then

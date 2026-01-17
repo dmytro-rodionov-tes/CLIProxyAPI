@@ -77,15 +77,15 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
 
       # Security keys - generate your own for production
-      - CREDS_KEY=${CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
-      - CREDS_IV=${CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
-      - JWT_SECRET=${JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-eaa5191f2914e30b9387fd84e254e4ba6fc51b4654968a9b0803b456a54b8418}
+      - CREDS_KEY=${CREDS_KEY:-generated_cred_here}
+      - CREDS_IV=${CREDS_IV:-generated_cred_here}
+      - JWT_SECRET=${JWT_SECRET:-generated_cred_here}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-generated_cred_here}
 
       # Search
       - SEARCH=${SEARCH:-true}
       - MEILI_HOST=http://meilisearch:7700
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-DrhYf7zENyR6AlUCKmnz0eYASOQdl6zxH7s7MKFSfFCt}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-generated_cred_here}
 
       # Registration
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
@@ -120,7 +120,7 @@ services:
     container_name: librechat-meilisearch
     restart: always
     environment:
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-DrhYf7zENyR6AlUCKmnz0eYASOQdl6zxH7s7MKFSfFCt}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-generated_cred_here}
       - MEILI_NO_ANALYTICS=true
     volumes:
       - ./librechat/meili_data_v1.12:/meili_data

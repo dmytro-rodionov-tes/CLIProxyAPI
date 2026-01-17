@@ -15,6 +15,12 @@ warn() {
   echo "[entrypoint] WARNING: $*" >&2
 }
 
+debug() {
+  if is_truthy "${DEBUG:-false}"; then
+    echo "[entrypoint][debug] $*"
+  fi
+}
+
 decode_base64() {
   if base64 --help 2>&1 | grep -q -- "-d"; then
     base64 -d
@@ -36,6 +42,8 @@ is_truthy() {
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 CONFIG_PATH="${CONFIG_PATH:-${ROOT_DIR}/config.yaml}"
 AUTH_DIR="${AUTH_DIR:-${ROOT_DIR}/auths}"
+LIBRECHAT_CONFIG_PATH="${LIBRECHAT_CONFIG_PATH:-${ROOT_DIR}/librechat/librechat.yaml}"
+LIBRECHAT_CONFIG_TEMPLATE="${LIBRECHAT_CONFIG_TEMPLATE:-${ROOT_DIR}/librechat/librechat.yaml.example}"
 
 # Determine deployment mode
 MODE="volume"  # Default: expect volume-mounted config
@@ -197,6 +205,27 @@ EOF
   fi
 
   info "Config generated successfully"
+fi
+
+# Optionally generate LibreChat config for compose stacks (avoids committing secrets)
+if is_truthy "${GENERATE_LIBRECHAT_CONFIG:-false}"; then
+  if [[ ! -f "${LIBRECHAT_CONFIG_TEMPLATE}" ]]; then
+    warn "LibreChat template not found at ${LIBRECHAT_CONFIG_TEMPLATE}; skipping LibreChat config generation"
+  else
+    mkdir -p "$(dirname "${LIBRECHAT_CONFIG_PATH}")"
+    if [[ -f "${LIBRECHAT_CONFIG_PATH}" ]] && ! is_truthy "${OVERWRITE_LIBRECHAT_CONFIG:-false}"; then
+      info "LibreChat config already exists at ${LIBRECHAT_CONFIG_PATH}; set OVERWRITE_LIBRECHAT_CONFIG=true to regenerate"
+    else
+      cp "${LIBRECHAT_CONFIG_TEMPLATE}" "${LIBRECHAT_CONFIG_PATH}"
+      debug "Copied LibreChat template to ${LIBRECHAT_CONFIG_PATH}"
+      # Optionally inline API_KEY to avoid runtime env substitution issues
+      if [[ -n "${API_KEY:-}" ]] && is_truthy "${INLINE_API_KEY_IN_LIBRECHAT_CONFIG:-true}"; then
+        sed -i "s#apiKey: \"\\\${API_KEY}\"#apiKey: \"${API_KEY}\"#g" "${LIBRECHAT_CONFIG_PATH}" || true
+        debug "Inlined API_KEY into ${LIBRECHAT_CONFIG_PATH}"
+      fi
+      info "LibreChat config generated at ${LIBRECHAT_CONFIG_PATH}"
+    fi
+  fi
 fi
 
 # Ensure auth directory exists

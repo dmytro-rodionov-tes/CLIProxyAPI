@@ -7,6 +7,9 @@ server
 config.yaml
 .env
 .idea
+/librechat/data-node*
+/librechat/meili_data*
+
 
 # Generated content
 bin/*

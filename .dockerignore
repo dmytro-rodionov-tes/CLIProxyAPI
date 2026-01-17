@@ -8,6 +8,8 @@ docker-compose.yml
 .gitignore
 .goreleaser.yml
 Dockerfile
+/librechat/data-node*
+/librechat/meili_data*
 
 # Documentation and license
 docs/*

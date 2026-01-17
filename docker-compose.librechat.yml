@@ -9,7 +9,7 @@
 #   - CLIProxyAPI (API proxy)
 #   - LibreChat (Chat UI on port 3080)
 #   - MongoDB (LibreChat database)
-#   - Meilisearch (LibreChat search, optional)
+#   - Meilisearch (LibreChat search)
 #
 # Access LibreChat at: http://localhost:3080
 
@@ -18,85 +18,59 @@ services:
   librechat:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: librechat
-    restart: unless-stopped
+    restart: always
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
-      cli-proxy-api:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
+      - cli-proxy-api
+      - mongodb
+      - meilisearch
     environment:
-      # MongoDB connection
+      - HOST=0.0.0.0
+      - PORT=3080
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
 
-      # Session encryption (generate with: openssl rand -hex 32)
-      - CREDS_KEY=${LIBRECHAT_CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
-      - CREDS_IV=${LIBRECHAT_CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
-      - JWT_SECRET=${LIBRECHAT_JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
-      - JWT_REFRESH_SECRET=${LIBRECHAT_JWT_REFRESH_SECRET:-eaa5191f2914e30b1c79f8ac3b40e8d94919f4e95e4c2ff9e81a9e2f5e0e29b5}
+      # Security keys - generate your own for production:
+      # openssl rand -hex 32
+      - CREDS_KEY=${CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
+      - CREDS_IV=${CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
+      - JWT_SECRET=${JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-eaa5191f2914e30b9387fd84e254e4ba6fc51b4654968a9b0803b456a54b8418}
 
-      # Meilisearch (optional for conversation search)
+      # Search
+      - SEARCH=${SEARCH:-true}
       - MEILI_HOST=http://meilisearch:7700
-      - MEILI_KEY=${MEILI_MASTER_KEY:-masterKey}
-      - SEARCH=true
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-DrhYf7zENyR6AlUCKmnz0eYASOQdl6zxH7s7MKFSfFCt}
 
-      # LibreChat settings
-      - ALLOW_REGISTRATION=${LIBRECHAT_ALLOW_REGISTRATION:-true}
+      # Registration
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
       - ALLOW_SOCIAL_LOGIN=false
       - ALLOW_SOCIAL_REGISTRATION=false
 
-      # Timezone
+      - NO_INDEX=${NO_INDEX:-true}
       - TZ=${TZ:-UTC}
     volumes:
-      # LibreChat configuration
       - ./librechat/librechat.yaml:/app/librechat.yaml:ro
-      # Persistent data
-      - librechat_images:/app/client/public/images
-      - librechat_logs:/app/api/logs
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      - ./librechat/images:/app/client/public/images
+      - ./librechat/logs:/app/api/logs
 
   # MongoDB - Required for LibreChat
   mongodb:
-    image: mongo:7.0
+    image: mongo:8.0.17
     container_name: librechat-mongodb
-    restart: unless-stopped
+    restart: always
+    command: mongod --noauth
     volumes:
-      - mongodb_data:/data/db
-    environment:
-      - TZ=${TZ:-UTC}
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      - ./librechat/data-node:/data/db
 
-  # Meilisearch - Optional for conversation search
+  # Meilisearch - Search for LibreChat
   meilisearch:
-    image: getmeili/meilisearch:v1.7
+    image: getmeili/meilisearch:v1.12.3
     container_name: librechat-meilisearch
-    restart: unless-stopped
-    volumes:
-      - meilisearch_data:/meili_data
+    restart: always
     environment:
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-DrhYf7zENyR6AlUCKmnz0eYASOQdl6zxH7s7MKFSfFCt}
       - MEILI_NO_ANALYTICS=true
-      - TZ=${TZ:-UTC}
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:7700/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-volumes:
-  mongodb_data:
-  meilisearch_data:
-  librechat_images:
-  librechat_logs:
+    volumes:
+      - ./librechat/meili_data_v1.12:/meili_data

@@ -1,142 +1,109 @@
 # LibreChat Configuration for CLI Proxy API Integration
 #
-# This configuration connects LibreChat to CLIProxyAPI, allowing you to use
-# all your AI providers (Claude, Gemini, Copilot, etc.) through a unified chat interface.
-#
 # Setup:
 # 1. Copy this file to librechat.yaml:
 #    cp librechat.yaml.example librechat.yaml
 #
-# 2. Replace YOUR_API_KEY with your CLIProxyAPI key
+# 2. Start the stack:
+#    docker compose -f docker-compose.full.yml up -d
 #
-# 3. Start the stack:
-#    docker compose -f docker-compose.yml -f docker-compose.librechat.yml up -d
-#
-# 4. Access LibreChat at http://localhost:3080
+# 3. Access LibreChat at http://localhost:3080
+#    - Create an account
+#    - Select "CLIProxyAPI" as the endpoint
+#    - Enter your API_KEY when prompted
 
 version: 1.1.5
 
 cache: true
 
-# Configure endpoints
 endpoints:
-  # CLIProxyAPI - Custom OpenAI-compatible endpoint
   custom:
     - name: "CLIProxyAPI"
-      # Point to the CLIProxyAPI service (internal Docker network)
-      apiKey: "${API_KEY}"
+      # "user_provided" means users enter their API key in the LibreChat UI
+      # Replace with your actual key if you want it pre-configured
+      apiKey: "user_provided"
       baseURL: "http://cli-proxy-api:8317/v1"
       models:
         default:
-          # Claude models
           - claude-sonnet-4-20250514
           - claude-opus-4-20250514
           - claude-3-5-sonnet-20241022
           - claude-3-5-haiku-20241022
-          # Gemini models
           - gemini-2.5-flash
           - gemini-2.5-pro
-          # OpenAI / Codex models (if configured)
           - gpt-4o
           - gpt-4o-mini
-          - o1
-          - o1-mini
-          # Copilot models (if authenticated)
-          - gpt-4o
-        # Fetch models from the API dynamically
+        # Auto-fetch available models from CLIProxyAPI
         fetch: true
-      # Model capabilities
       titleConvo: true
       titleModel: "claude-3-5-haiku-20241022"
       summarize: false
       forcePrompt: false
       modelDisplayLabel: "CLIProxyAPI"
-      iconURL: "https://raw.githubusercontent.com/anthropics/anthropic-cookbook/main/misc/anthropic_logo.svg"
-
-  # You can also add direct Anthropic endpoint if you have API keys
-  # anthropic:
-  #   apiKey: "${ANTHROPIC_API_KEY}"
-  #   models:
-  #     default:
-  #       - claude-sonnet-4-20250514
-  #       - claude-opus-4-20250514
-  #       - claude-3-5-sonnet-20241022
-
-  # Or direct OpenAI if you have API keys
-  # openAI:
-  #   apiKey: "${OPENAI_API_KEY}"
-  #   models:
-  #     default:
-  #       - gpt-4o
-  #       - gpt-4o-mini
-  #       - o1
-  #       - o1-mini
 
 # Model specifications for better UI experience
+# Each item MUST have a preset object
 modelSpecs:
   list:
-    # Claude models
     - name: "claude-sonnet-4-20250514"
       label: "Claude Sonnet 4"
       description: "Anthropic's balanced model for most tasks"
-      iconURL: "https://raw.githubusercontent.com/anthropics/anthropic-cookbook/main/misc/anthropic_logo.svg"
-      contextWindow: 200000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "claude-sonnet-4-20250514"
 
     - name: "claude-opus-4-20250514"
       label: "Claude Opus 4"
       description: "Anthropic's most capable model for complex tasks"
-      iconURL: "https://raw.githubusercontent.com/anthropics/anthropic-cookbook/main/misc/anthropic_logo.svg"
-      contextWindow: 200000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "claude-opus-4-20250514"
 
     - name: "claude-3-5-sonnet-20241022"
       label: "Claude 3.5 Sonnet"
       description: "Previous generation Sonnet model"
-      iconURL: "https://raw.githubusercontent.com/anthropics/anthropic-cookbook/main/misc/anthropic_logo.svg"
-      contextWindow: 200000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "claude-3-5-sonnet-20241022"
 
     - name: "claude-3-5-haiku-20241022"
       label: "Claude 3.5 Haiku"
       description: "Fast and efficient Claude model"
-      iconURL: "https://raw.githubusercontent.com/anthropics/anthropic-cookbook/main/misc/anthropic_logo.svg"
-      contextWindow: 200000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "claude-3-5-haiku-20241022"
 
-    # Gemini models
     - name: "gemini-2.5-flash"
       label: "Gemini 2.5 Flash"
       description: "Google's fast multimodal model"
-      contextWindow: 1000000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "gemini-2.5-flash"
 
     - name: "gemini-2.5-pro"
       label: "Gemini 2.5 Pro"
       description: "Google's advanced multimodal model"
-      contextWindow: 1000000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "gemini-2.5-pro"
 
-    # OpenAI models
     - name: "gpt-4o"
       label: "GPT-4o"
       description: "OpenAI's multimodal flagship model"
-      contextWindow: 128000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "gpt-4o"
 
     - name: "gpt-4o-mini"
       label: "GPT-4o Mini"
       description: "OpenAI's efficient model"
-      contextWindow: 128000
+      preset:
+        endpoint: "CLIProxyAPI"
+        model: "gpt-4o-mini"
 
-    - name: "o1"
-      label: "o1"
-      description: "OpenAI's reasoning model"
-      contextWindow: 200000
-
-    - name: "o1-mini"
-      label: "o1 Mini"
-      description: "OpenAI's efficient reasoning model"
-      contextWindow: 128000
-
-# Registration settings
 registration:
   socialLogins: []
 
-# Rate limiting (per user)
 rateLimits:
   fileUploads:
     ipMax: 100

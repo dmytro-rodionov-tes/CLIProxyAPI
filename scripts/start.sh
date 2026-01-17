@@ -43,7 +43,7 @@ ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 CONFIG_PATH="${CONFIG_PATH:-${ROOT_DIR}/config.yaml}"
 AUTH_DIR="${AUTH_DIR:-${ROOT_DIR}/auths}"
 LIBRECHAT_CONFIG_PATH="${LIBRECHAT_CONFIG_PATH:-${ROOT_DIR}/librechat/librechat.yaml}"
-LIBRECHAT_CONFIG_TEMPLATE="${LIBRECHAT_CONFIG_TEMPLATE:-${ROOT_DIR}/librechat/librechat.yaml.example}"
+LIBRECHAT_CONFIG_TEMPLATE="${LIBRECHAT_CONFIG_TEMPLATE:-${ROOT_DIR}/librechat/librechat.example.yaml}"
 
 # Determine deployment mode
 MODE="volume"  # Default: expect volume-mounted config

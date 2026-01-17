@@ -9,7 +9,7 @@ LibreChat is a full-featured AI chat interface that works with CLIProxyAPI to pr
 Copy the example configuration:
 
 ```bash
-cp librechat/librechat.yaml.example librechat/librechat.yaml
+cp librechat/librechat.example.yaml librechat/librechat.yaml
 ```
 
 Edit `librechat/librechat.yaml` if you want to customize:

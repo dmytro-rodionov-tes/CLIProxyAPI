@@ -22,7 +22,7 @@ WORKDIR /CLIProxyAPI
 COPY --from=builder /app/cli-proxy-api /CLIProxyAPI/cli-proxy-api
 COPY scripts /CLIProxyAPI/scripts
 COPY config.example.yaml /CLIProxyAPI/config.example.yaml
-COPY librechat/librechat.yaml.example /CLIProxyAPI/librechat/librechat.yaml.example
+COPY librechat/librechat.example.yaml /CLIProxyAPI/librechat/librechat.example.yaml
 
 # Create directories for volume mounts
 RUN mkdir -p /CLIProxyAPI/auths /CLIProxyAPI/logs /CLIProxyAPI/librechat

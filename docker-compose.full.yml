@@ -58,20 +58,30 @@ services:
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
-      - cli-proxy-api
-      - mongodb
+      cli-proxy-api:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
     environment:
+      # MongoDB
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
+
+      # Security keys (generate your own for production)
       - CREDS_KEY=${LIBRECHAT_CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
       - CREDS_IV=${LIBRECHAT_CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
       - JWT_SECRET=${LIBRECHAT_JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
       - JWT_REFRESH_SECRET=${LIBRECHAT_JWT_REFRESH_SECRET:-eaa5191f2914e30b1c79f8ac3b40e8d94919f4e95e4c2ff9e81a9e2f5e0e29b5}
+
+      # Search
       - MEILI_HOST=http://meilisearch:7700
       - MEILI_KEY=${MEILI_MASTER_KEY:-masterKey}
       - SEARCH=true
+
+      # Registration
       - ALLOW_REGISTRATION=${LIBRECHAT_ALLOW_REGISTRATION:-true}
       - ALLOW_SOCIAL_LOGIN=false
       - ALLOW_SOCIAL_REGISTRATION=false
+
       - TZ=${TZ:-UTC}
     volumes:
       - ./librechat/librechat.yaml:/app/librechat.yaml:ro

@@ -22,9 +22,10 @@ WORKDIR /CLIProxyAPI
 COPY --from=builder /app/cli-proxy-api /CLIProxyAPI/cli-proxy-api
 COPY scripts /CLIProxyAPI/scripts
 COPY config.example.yaml /CLIProxyAPI/config.example.yaml
+COPY librechat/librechat.yaml.example /CLIProxyAPI/librechat/librechat.yaml.example
 
 # Create directories for volume mounts
-RUN mkdir -p /CLIProxyAPI/auths /CLIProxyAPI/logs
+RUN mkdir -p /CLIProxyAPI/auths /CLIProxyAPI/logs /CLIProxyAPI/librechat
 
 # Default port - can be overridden via PORT env var
 EXPOSE 8317

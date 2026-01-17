@@ -48,7 +48,7 @@ services:
       - TZ=${TZ:-UTC}
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8317/health/ready"]
-      interval: 30s
+      interval: 360s
       timeout: 10s
       retries: 3
       start_period: 10s
@@ -60,10 +60,6 @@ services:
     restart: always
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
-    labels:
-      - "coolify.managed=true"
-      - "coolify.name=librechat"
-      - "coolify.port=3080"
     depends_on:
       cli-proxy-api:
         condition: service_healthy
@@ -71,12 +67,6 @@ services:
         condition: service_healthy
       meilisearch:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     environment:
       - HOST=0.0.0.0
       - PORT=3080
@@ -118,7 +108,7 @@ services:
       - ./librechat/data-node:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
+      interval: 3600s
       timeout: 10s
       retries: 3
       start_period: 20s
@@ -135,7 +125,7 @@ services:
       - ./librechat/meili_data_v1.12:/meili_data
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:7700/health"]
-      interval: 30s
+      interval: 3600s
       timeout: 10s
       retries: 3
       start_period: 15s

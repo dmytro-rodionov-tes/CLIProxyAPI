@@ -93,9 +93,9 @@ services:
 
       - NO_INDEX=${NO_INDEX:-true}
     volumes:
-      # librechat.yaml is mounted via Coolify Persistent Storage
-      # Source: /data/coolify/applications/.../librechat/librechat.yaml
-      # Destination: /app/librechat.yaml
+      # librechat.yaml: mount from repo or Coolify persistent storage
+      # Coolify example source: /data/coolify/applications/.../librechat/librechat.yaml
+      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
       - ./librechat/images:/app/client/public/images
       - ./librechat/logs:/app/api/logs
 

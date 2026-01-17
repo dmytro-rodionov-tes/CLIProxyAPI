@@ -1,0 +1,100 @@
+# LibreChat Integration for CLI Proxy API
+#
+# This compose file adds LibreChat as an optional frontend for CLIProxyAPI.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.librechat.yml up -d
+#
+# This will start:
+#   - CLIProxyAPI (API proxy)
+#   - LibreChat (Chat UI on port 3080)
+#   - MongoDB (LibreChat database)
+#   - Meilisearch (LibreChat search, optional)
+#
+# Access LibreChat at: http://localhost:3080
+
+services:
+  # LibreChat - Full-featured AI chat interface
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: librechat
+    restart: unless-stopped
+    ports:
+      - "${LIBRECHAT_PORT:-3080}:3080"
+    depends_on:
+      - cli-proxy-api
+      - mongodb
+    environment:
+      # MongoDB connection
+      - MONGO_URI=mongodb://mongodb:27017/LibreChat
+
+      # Session encryption (generate with: openssl rand -hex 32)
+      - CREDS_KEY=${LIBRECHAT_CREDS_KEY:-f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0}
+      - CREDS_IV=${LIBRECHAT_CREDS_IV:-e2341419ec3dd3d19b13a1a87fafcbfb}
+      - JWT_SECRET=${LIBRECHAT_JWT_SECRET:-16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef}
+      - JWT_REFRESH_SECRET=${LIBRECHAT_JWT_REFRESH_SECRET:-eaa5191f2914e30b1c79f8ac3b40e8d94919f4e95e4c2ff9e81a9e2f5e0e29b5}
+
+      # Meilisearch (optional for conversation search)
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - SEARCH=true
+
+      # LibreChat settings
+      - ALLOW_REGISTRATION=${LIBRECHAT_ALLOW_REGISTRATION:-true}
+      - ALLOW_SOCIAL_LOGIN=false
+      - ALLOW_SOCIAL_REGISTRATION=false
+
+      # Timezone
+      - TZ=${TZ:-UTC}
+    volumes:
+      # LibreChat configuration
+      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      # Persistent data
+      - librechat_images:/app/client/public/images
+      - librechat_logs:/app/api/logs
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # MongoDB - Required for LibreChat
+  mongodb:
+    image: mongo:7.0
+    container_name: librechat-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Meilisearch - Optional for conversation search
+  meilisearch:
+    image: getmeili/meilisearch:v1.7
+    container_name: librechat-meilisearch
+    restart: unless-stopped
+    volumes:
+      - meilisearch_data:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_NO_ANALYTICS=true
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mongodb_data:
+  meilisearch_data:
+  librechat_images:
+  librechat_logs:

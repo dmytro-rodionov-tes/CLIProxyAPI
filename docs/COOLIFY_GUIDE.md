@@ -162,9 +162,66 @@ Set `MANAGEMENT_PASSWORD` environment variable and redeploy.
 
 ### Health check failing
 
-The health check hits `/` on port 8317. Ensure:
+The health check hits `/health/ready` on port 8317. Ensure:
 - Container has finished starting (wait ~10 seconds)
 - No firewall blocking internal container communication
+
+Test manually:
+```bash
+curl http://localhost:8317/health/ready
+```
+
+---
+
+## Health Checks & Monitoring
+
+### Health Check Endpoints
+
+CLIProxyAPI provides Kubernetes-style health endpoints:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/health` | Basic liveness check |
+| `/health/ready` | Readiness check (used by Coolify) |
+| `/health/live` | Kubernetes liveness alias |
+
+### Prometheus Metrics
+
+Enable metrics collection for monitoring:
+
+1. Add to environment variables:
+```env
+METRICS_ENABLED=true
+```
+
+2. Or add to config.yaml:
+```yaml
+metrics-enabled: true
+```
+
+3. Metrics are available at `/metrics`
+
+**Available metrics:**
+- `cliproxy_requests_total` - Request count by model/provider/status
+- `cliproxy_request_duration_seconds` - Latency histogram
+- `cliproxy_tokens_total` - Token usage by model
+- `cliproxy_credentials_active` - Active credentials by provider
+- `cliproxy_errors_total` - Error count by type
+
+---
+
+## LibreChat Integration
+
+Add a full-featured chat UI with LibreChat:
+
+```bash
+# Start with LibreChat
+docker compose -f docker-compose.yml -f docker-compose.librechat.yml up -d
+```
+
+Access LibreChat at `http://your-domain:3080`
+
+See [LIBRECHAT.md](LIBRECHAT.md) for detailed configuration.
 
 ---
 

@@ -13,14 +13,7 @@
 services:
   # CLI Proxy API - Main proxy server
   cli-proxy-api:
-    image: ${CLI_PROXY_IMAGE:-cli-proxy-api:latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        VERSION: ${VERSION:-dev}
-        COMMIT: ${COMMIT:-none}
-        BUILD_DATE: ${BUILD_DATE:-unknown}
+    image: mail2025/cli-proxy-api:latest
     container_name: cli-proxy-api
     restart: always
     ports:
@@ -58,9 +51,18 @@ services:
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
-      - cli-proxy-api
-      - mongodb
-      - meilisearch
+      cli-proxy-api:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     environment:
       - HOST=0.0.0.0
       - PORT=3080
@@ -97,6 +99,12 @@ services:
     command: mongod --noauth
     volumes:
       - ./librechat/data-node:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   # Meilisearch - LibreChat search
   meilisearch:
@@ -108,3 +116,9 @@ services:
       - MEILI_NO_ANALYTICS=true
     volumes:
       - ./librechat/meili_data_v1.12:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

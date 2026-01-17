@@ -37,9 +37,9 @@ RUN cp /usr/share/zoneinfo/${TZ} /etc/localtime && echo "${TZ}" > /etc/timezone
 # Set working directory for runtime
 ENV ROOT_DIR=/CLIProxyAPI
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8317}/ || exit 1
+# Health check - uses /health/ready for proper readiness check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD curl -sf http://localhost:${PORT:-8317}/health/ready || exit 1
 
 # Use the flexible entrypoint script
 # Supports: volume-mounted config, AUTH_BUNDLE, AUTH_ZIP_URL modes

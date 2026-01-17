@@ -25,10 +25,6 @@ services:
     restart: always
     ports:
       - "${EXTERNAL_PORT:-8317}:8317"
-    labels:
-      - "coolify.managed=true"
-      - "coolify.name=cli-proxy-api"
-      - "coolify.port=8317"
     volumes:
       - ./auths:/CLIProxyAPI/auths
       - ./logs:/CLIProxyAPI/logs
@@ -58,8 +54,10 @@ services:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: librechat
     restart: always
-    ports:
-      - "${LIBRECHAT_PORT:-3080}:3080"
+    # Note: In Coolify, remove port binding and configure domain in Coolify UI instead
+    # For local development: uncomment the ports section below
+    # ports:
+    #   - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
       cli-proxy-api:
         condition: service_healthy
@@ -67,6 +65,12 @@ services:
         condition: service_healthy
       meilisearch:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/health"]
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - HOST=0.0.0.0
       - PORT=3080

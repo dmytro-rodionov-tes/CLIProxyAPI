@@ -28,6 +28,7 @@ services:
     volumes:
       - ./auths:/CLIProxyAPI/auths
       - ./logs:/CLIProxyAPI/logs
+      - ./librechat:/CLIProxyAPI/librechat
     environment:
       - API_KEY=${API_KEY:-}
       - PORT=8317
@@ -73,7 +74,7 @@ services:
       - ALLOW_SOCIAL_REGISTRATION=false
       - TZ=${TZ:-UTC}
     volumes:
-      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      - ./librechat/:/app/:ro
       - librechat_images:/app/client/public/images
       - librechat_logs:/app/api/logs
     healthcheck:

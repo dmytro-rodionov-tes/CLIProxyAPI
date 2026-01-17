@@ -19,6 +19,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/access"
+	healthHandlers "github.com/router-for-me/CLIProxyAPI/v6/internal/api/handlers/health"
 	managementHandlers "github.com/router-for-me/CLIProxyAPI/v6/internal/api/handlers/management"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/api/middleware"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/api/modules"
@@ -151,6 +152,9 @@ type Server struct {
 	// management handler
 	mgmt *managementHandlers.Handler
 
+	// health handler for liveness/readiness probes
+	health *healthHandlers.Handler
+
 	// ampModule is the Amp routing module for model mapping hot-reload
 	ampModule *ampmodule.AmpModule
 
@@ -254,6 +258,10 @@ func NewServer(cfg *config.Config, authManager *auth.Manager, accessManager *sdk
 	}
 	managementasset.SetCurrentConfig(cfg)
 	auth.SetQuotaCooldownDisabled(cfg.DisableCooling)
+	// Initialize health handler and register routes
+	s.health = healthHandlers.NewHandler()
+	s.health.RegisterRoutes(engine)
+
 	// Initialize management handler
 	s.mgmt = managementHandlers.NewHandler(cfg, configFilePath, authManager)
 	if optionState.localPassword != "" {
@@ -796,6 +804,11 @@ func (s *Server) Start() error {
 		return fmt.Errorf("failed to start HTTP server: server not initialized")
 	}
 
+	// Mark health as ready before starting to accept traffic
+	if s.health != nil {
+		s.health.SetReady(true)
+	}
+
 	useTLS := s.cfg != nil && s.cfg.TLS.Enable
 	if useTLS {
 		cert := strings.TrimSpace(s.cfg.TLS.Cert)
@@ -828,6 +841,11 @@ func (s *Server) Start() error {
 //   - error: An error if the server fails to stop
 func (s *Server) Stop(ctx context.Context) error {
 	log.Debug("Stopping API server...")
+
+	// Mark health as not ready to stop accepting new traffic
+	if s.health != nil {
+		s.health.SetReady(false)
+	}
 
 	if s.keepAliveEnabled {
 		select {

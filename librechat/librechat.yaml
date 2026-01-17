@@ -1,0 +1,30 @@
+# LibreChat Configuration for CLI Proxy API Integration
+version: 1.1.5
+
+cache: true
+
+endpoints:
+  custom:
+    - name: "CLIProxyAPI"
+      # Use environment variable for API key (set API_KEY in Coolify)
+      # Or use "user_provided" to let users enter their own key
+      apiKey: "${API_KEY}"
+      baseURL: "http://cli-proxy-api:8317/v1"
+      models:
+        default: []
+        fetch: true  # Auto-fetch all available models from /v1/models
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      forcePrompt: false
+      modelDisplayLabel: "CLIProxyAPI"
+
+registration:
+  socialLogins: []
+
+rateLimits:
+  fileUploads:
+    ipMax: 100
+    ipWindowInMinutes: 60
+    userMax: 50
+    userWindowInMinutes: 60

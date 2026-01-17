@@ -25,6 +25,10 @@ services:
     restart: always
     ports:
       - "${EXTERNAL_PORT:-8317}:8317"
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=cli-proxy-api"
+      - "coolify.port=8317"
     volumes:
       - ./auths:/CLIProxyAPI/auths
       - ./logs:/CLIProxyAPI/logs
@@ -56,6 +60,10 @@ services:
     restart: always
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=librechat"
+      - "coolify.port=3080"
     depends_on:
       cli-proxy-api:
         condition: service_healthy

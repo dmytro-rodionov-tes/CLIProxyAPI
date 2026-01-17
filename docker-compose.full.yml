@@ -54,7 +54,6 @@ services:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: librechat
     restart: always
-    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "${LIBRECHAT_PORT:-3080}:3080"
     depends_on:
@@ -65,7 +64,7 @@ services:
       meilisearch:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3080/api/health"]
+      test: ["CMD", "curl", "-sf", "http://localhost:3080/health"]
       interval: 30s
       timeout: 10s
       retries: 3

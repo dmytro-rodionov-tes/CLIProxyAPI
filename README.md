@@ -75,6 +75,7 @@ Key docs:
 
 - **API Usage: [`docs/API_USAGE.md`](docs/API_USAGE.md)** - How to use the endpoints
 - **Coolify deployment: [`docs/COOLIFY_GUIDE.md`](docs/COOLIFY_GUIDE.md)** - Deploy in under 5 minutes
+- **LibreChat integration: [`docs/LIBRECHAT.md`](docs/LIBRECHAT.md)** - Full-featured chat UI
 - Railway deployment: `docs/RAILWAY_GUIDE.md`
 - Railway scripts reference (includes Copilot config flags like `COPILOT_FORCE_AGENT_CALL`): `scripts/README_RAILWAY.md`
 - SDK usage (embed the proxy in Go): `docs/sdk-usage.md`

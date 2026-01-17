@@ -20,9 +20,9 @@ interface:
 registration:
   socialLogins: ["github", "google"]
 
-actions:
-  allowedDomains:
-    - '*.rodionov.uk'
+#actions:
+#  allowedDomains:
+#    - '*'
 
 endpoints:
   custom:

@@ -20,9 +20,11 @@ interface:
 registration:
   socialLogins: ["github", "google"]
 
-actions:
-  allowedDomains:
-    - '*.rodionov.uk'
+#actions:
+#  allowedDomains:
+#    - 'localhost'
+#    - '127.0.0.1'
+#    - '*'
 
 endpoints:
   custom:

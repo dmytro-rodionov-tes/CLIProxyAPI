@@ -74,7 +74,7 @@ services:
       - ALLOW_SOCIAL_REGISTRATION=false
       - TZ=${TZ:-UTC}
     volumes:
-      - ./librechat/:/app
+      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
       - librechat_images:/app/client/public/images
       - librechat_logs:/app/api/logs
     healthcheck:

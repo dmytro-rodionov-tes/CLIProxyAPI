@@ -13,7 +13,7 @@
 services:
   # CLI Proxy API - Main proxy server
   cli-proxy-api:
-    image: ${CLI_PROXY_IMAGE:-cli-proxy-api:latest}
+    image: ${CLI_PROXY_IMAGE:-mail2025/cli-proxy-api:latest}
     build:
       context: .
       dockerfile: Dockerfile

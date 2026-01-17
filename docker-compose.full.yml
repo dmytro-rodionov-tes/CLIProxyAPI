@@ -28,6 +28,7 @@ services:
     volumes:
       - ./auths:/CLIProxyAPI/auths
       - ./logs:/CLIProxyAPI/logs
+      - librechat_config:/CLIProxyAPI/librechat
     environment:
       - API_KEY=${API_KEY:-}
       - PORT=8317
@@ -92,10 +93,9 @@ services:
       - ALLOW_SOCIAL_REGISTRATION=false
 
       - NO_INDEX=${NO_INDEX:-true}
+    command: ["/bin/sh", "-c", "cp /config/librechat.yaml /app/librechat.yaml && exec cross-env NODE_ENV=production node api/server/index.js"]
     volumes:
-      # librechat.yaml: mount from repo or Coolify persistent storage
-      # Coolify example source: /data/coolify/applications/.../librechat/librechat.yaml
-      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      - librechat_config:/config
       - ./librechat/images:/app/client/public/images
       - ./librechat/logs:/app/api/logs
 
@@ -130,3 +130,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+
+volumes:
+  librechat_config:

@@ -70,7 +70,7 @@ services:
       retries: 3
       start_period: 30s
     environment:
-      - POST=3080
+      - PORT=3080
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
 

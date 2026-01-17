@@ -70,6 +70,7 @@ services:
       - ROUTING_STRATEGY=${ROUTING_STRATEGY:-round-robin}
       - LOGGING_TO_FILE=${LOGGING_TO_FILE:-false}
       - USAGE_STATS=${USAGE_STATS:-false}
+      - METRICS_ENABLED=${METRICS_ENABLED:-false}
 
       # ============================================================
       # OPTIONAL: Copilot configuration

@@ -94,7 +94,10 @@ services:
 
       - NO_INDEX=${NO_INDEX:-true}
     volumes:
-      - ./librechat/librechat.yaml:/app/librechat.yaml:ro
+      # NOTE: For Coolify, add librechat.yaml via "Configuration Files" in Coolify UI
+      # Mount path: /app/librechat.yaml
+      # For local dev, uncomment the line below:
+      # - ./librechat/librechat.yaml:/app/librechat.yaml:ro
       - ./librechat/images:/app/client/public/images
       - ./librechat/logs:/app/api/logs
 

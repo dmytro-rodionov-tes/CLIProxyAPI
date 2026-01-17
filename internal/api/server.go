@@ -24,6 +24,7 @@ import (
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/api/middleware"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/api/modules"
 	ampmodule "github.com/router-for-me/CLIProxyAPI/v6/internal/api/modules/amp"
+	metricsmodule "github.com/router-for-me/CLIProxyAPI/v6/internal/api/modules/metrics"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/config"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/logging"
 	"github.com/router-for-me/CLIProxyAPI/v6/internal/managementasset"
@@ -158,6 +159,9 @@ type Server struct {
 	// ampModule is the Amp routing module for model mapping hot-reload
 	ampModule *ampmodule.AmpModule
 
+	// metricsModule is the Prometheus metrics module
+	metricsModule *metricsmodule.Module
+
 	// managementRoutesRegistered tracks whether the management routes have been attached to the engine.
 	managementRoutesRegistered atomic.Bool
 	// managementRoutesEnabled controls whether management endpoints serve real handlers.
@@ -277,16 +281,24 @@ func NewServer(cfg *config.Config, authManager *auth.Manager, accessManager *sdk
 	// Setup routes
 	s.setupRoutes()
 
-	// Register Amp module using V2 interface with Context
-	s.ampModule = ampmodule.NewLegacy(accessManager, AuthMiddleware(accessManager))
+	// Create module context for V2 modules
 	ctx := modules.Context{
 		Engine:         engine,
 		BaseHandler:    s.handlers,
 		Config:         cfg,
 		AuthMiddleware: AuthMiddleware(accessManager),
 	}
+
+	// Register Amp module using V2 interface with Context
+	s.ampModule = ampmodule.NewLegacy(accessManager, AuthMiddleware(accessManager))
 	if err := modules.RegisterModule(ctx, s.ampModule); err != nil {
 		log.Errorf("Failed to register Amp module: %v", err)
+	}
+
+	// Register Prometheus metrics module
+	s.metricsModule = metricsmodule.New()
+	if err := modules.RegisterModule(ctx, s.metricsModule); err != nil {
+		log.Errorf("Failed to register metrics module: %v", err)
 	}
 
 	// Apply additional router configurators from options
@@ -1032,6 +1044,13 @@ func (s *Server) UpdateClients(cfg *config.Config) {
 		}
 	} else {
 		log.Warnf("amp module is nil, skipping config update")
+	}
+
+	// Notify metrics module of config changes
+	if s.metricsModule != nil {
+		if err := s.metricsModule.OnConfigUpdated(cfg); err != nil {
+			log.Errorf("failed to update metrics module config: %v", err)
+		}
 	}
 
 	// Count client sources from configuration and auth store.

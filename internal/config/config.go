@@ -54,6 +54,9 @@ type Config struct {
 	// UsageStatisticsEnabled toggles in-memory usage aggregation; when false, usage data is discarded.
 	UsageStatisticsEnabled bool `yaml:"usage-statistics-enabled" json:"usage-statistics-enabled"`
 
+	// MetricsEnabled toggles Prometheus metrics collection and the /metrics endpoint.
+	MetricsEnabled bool `yaml:"metrics-enabled" json:"metrics-enabled"`
+
 	// DisableCooling disables quota cooldown scheduling when true.
 	DisableCooling bool `yaml:"disable-cooling" json:"disable-cooling"`
 
